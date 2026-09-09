@@ -1,5 +1,5 @@
 # Exp:7 - Expectation–Maximization for the Two-Coin Flipping Experiment
-## By: Dr N.SARAVANAN - Assistant Professor,AIML,SEC
+
 This project implements the coin-flipping **Expectation–Maximization (EM)** example demonstrated in the supplied video. It estimates the probability of heads for two coins when the identity of the coin used in each experiment is unknown.
 
 The implementation is intentionally a **mixture-of-coins model**, not a Hidden Markov Model (HMM). One hidden coin generates an entire experiment of ten tosses; the coin does not switch within that experiment.
@@ -184,3 +184,120 @@ python3 EMCOINFLIP.py
 | `fit_two_coins()` | Repeats the E-step and M-step until convergence. |
 | `main()` | Defines the video’s five experiments, runs EM, and prints the results. |
 
+
+
+## PROGRAM:
+#### NAME: Hari Prasath P
+#### REGISTER NUMBER :212223230070
+
+```
+import numpy as np
+from scipy.stats import binom
+
+def em_coin_flipping_converge(tolerance=1e-8):
+    experiments = [
+        (5, 5),
+        (9, 1),
+        (8, 2),
+        (4, 6),
+        (7, 3)
+    ]
+
+    theta_a = 0.60
+    theta_b = 0.50
+    prior_a = 0.50
+    prior_b = 1 - prior_a
+
+    iteration_count = 0
+    first_step = True
+
+    print("--- EXPERIMENT DATA ---")
+
+    for i, (heads, tails) in enumerate(experiments, 1):
+        print(f"E{i}: Heads = {heads}, Tails = {tails}")
+
+    while True:
+        iteration_count += 1
+
+        expected_heads_a = 0.0
+        expected_tails_a = 0.0
+        expected_heads_b = 0.0
+        expected_tails_b = 0.0
+
+        if first_step:
+            print("\n--- FIRST E-STEP ---")
+
+        for i, (heads, tails) in enumerate(experiments, 1):
+            n = heads + tails
+
+            likelihood_a = binom.pmf(heads, n, theta_a)
+            likelihood_b = binom.pmf(heads, n, theta_b)
+
+            prob_a = (
+                prior_a * likelihood_a
+                / (prior_a * likelihood_a + prior_b * likelihood_b)
+            )
+
+            prob_b = 1 - prob_a
+
+            expected_heads_a += prob_a * heads
+            expected_tails_a += prob_a * tails
+
+            expected_heads_b += prob_b * heads
+            expected_tails_b += prob_b * tails
+
+            if first_step:
+                print(
+                    f"E{i}: P(A|E) = {prob_a:.4f}, "
+                    f"P(B|E) = {prob_b:.4f}"
+                )
+
+        new_theta_a = expected_heads_a / (
+            expected_heads_a + expected_tails_a
+        )
+
+        new_theta_b = expected_heads_b / (
+            expected_heads_b + expected_tails_b
+        )
+
+        if first_step:
+            print("\n--- FIRST M-STEP ---")
+            print(
+                f"Coin A: Expected Heads = {expected_heads_a:.4f}, "
+                f"Expected Tails = {expected_tails_a:.4f}"
+            )
+            print(
+                f"Coin B: Expected Heads = {expected_heads_b:.4f}, "
+                f"Expected Tails = {expected_tails_b:.4f}"
+            )
+            print(f"New Theta A = {new_theta_a:.4f}")
+            print(f"New Theta B = {new_theta_b:.4f}")
+            first_step = False
+
+        if (
+            abs(new_theta_a - theta_a) < tolerance
+            and abs(new_theta_b - theta_b) < tolerance
+        ):
+            theta_a = new_theta_a
+            theta_b = new_theta_b
+            break
+
+        theta_a = new_theta_a
+        theta_b = new_theta_b
+
+    print("\n--- CONVERGENCE REACHED ---")
+    print(f"Algorithm converged after {iteration_count} iterations.")
+    print(f"Final Theta A = {theta_a:.4f}")
+    print(f"Final Theta B = {theta_b:.4f}")
+    print(f"Coin A probability of Heads = {theta_a:.2f}")
+    print(f"Coin B probability of Heads = {theta_b:.2f}")
+
+
+if __name__ == "__main__":
+    em_coin_flipping_converge()
+```
+## OUTPUT:
+<img width="462" height="387" alt="image" src="https://github.com/user-attachments/assets/eb10ea7a-0759-4250-aae2-6b634d488b99" />
+
+## RESULT:
+The Expectation-Maximization algorithm was successfully implemented for the two-coin flipping experiment. The algorithm performed the E-step to estimate the hidden coin assignments and the M-step to update the coin parameters. The process was repeated until convergence, successfully estimating the biases of the two coins from the given observations.
